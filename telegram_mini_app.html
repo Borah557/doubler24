@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarnPoints - Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 414px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: #f8f9fa;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="70" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="80" r="2.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            pointer-events: none;
+        }
+
+        .user-info {
+            position: relative;
+            z-index: 1;
+        }
+
+        .user-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .user-id {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .balance-section {
+            background: white;
+            margin: -20px 20px 20px 20px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .balance-title {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .balance-value {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .balance-usd {
+            font-size: 1.1em;
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .withdraw-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .history-btn {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #dee2e6;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .main-content {
+            padding: 0 20px 100px 20px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .see-all {
+            color: #667eea;
+            font-size: 0.9em;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .task-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1.2em;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .task-description {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .task-reward {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .task-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .task-button.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .task-button.cooldown {
+            background: #f8f9fa;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .cooldown-timer {
+            text-align: center;
+            color: #666;
+            font-size: 0.8em;
+            margin-top: 8px;
+        }
+
+        .referral-card {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .referral-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .referral-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .referral-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .referral-subtitle {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .referral-code {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+
+        .referral-button {
+            background: white;
+            color: #ff6b6b;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .referral-button:hover {
+            transform: scale(1.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            background: white;
+            padding: 12px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 0.75em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 12px;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.5em;
+            margin-bottom: 4px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .withdraw-methods {
+            margin: 20px 0;
+        }
+
+        .withdraw-method {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .withdraw-method:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .withdraw-method.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .method-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .method-info {
+            flex: 1;
+        }
+
+        .method-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .method-desc {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .withdraw-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .withdraw-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .withdraw-info-item:last-child {
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #333;
+            border-top: 1px solid #dee2e6;
+            padding-top: 8px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .modal-button.primary {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .modal-button.secondary {
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .modal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            z-index: 1001;
+            opacity: 0;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(10px);
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .admin-panel {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .admin-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .admin-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .admin-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .admin-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 375px) {
+            .app-container {
+                max-width: 100%;
+            }
+            
+            .balance-section {
+                margin: -20px 15px 20px 15px;
+            }
+            
+            .main-content {
+                padding: 0 15px 100px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-id" id="userId">@username</div>
+            </div>
+        </div>
+
+        <!-- Balance Section -->
+        <div class="balance-section">
+            <div class="balance-header">
+                <div class="balance-title">💰 Your Balance</div>
+            </div>
+            <div class="balance-value" id="pointsBalance">0</div>
+            <div class="balance-usd" id="balanceUsd">≈ $0.00</div>
+            
+            <div class="action-buttons">
+                <button class="action-btn withdraw-btn" onclick="showWithdrawModal()">
+                    💸 Withdraw
+                </button>
+                <button class="action-btn history-btn" onclick="showHistory()">
+                    📊 History
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Tasks Section -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">🎯 Available Tasks</div>
+                    <a href="#" class="see-all" onclick="loadAllTasks()">See All</a>
+                </div>
+                <div id="tasksList" class="loading">
+                    <div class="spinner"></div>
+                    Loading tasks...
+                </div>
+            </div>
+
+            <!-- Referral Section -->
+            <div class="section">
+                <div class="referral-card">
+                    <div class="referral-content">
+                        <div class="referral-title">🎁 Invite Friends</div>
+                        <div class="referral-subtitle">Earn 50% bonus from referrals!</div>
+                        <div class="referral-code" id="referralCode">Loading...</div>
+                        <button class="referral-button" onclick="copyReferralLink()">
+                            Share Link
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">📈 Your Stats</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalReferrals">0</div>
+                        <div class="stat-label">Referrals</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalEarned">0</div>
+                        <div class="stat-label">Total Earned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="todayEarned">0</div>
+                        <div class="stat-label">Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="tasksCompleted">0</div>
+                        <div class="stat-label">Tasks Done</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Panel -->
+            <div id="adminPanel" class="admin-panel" style="display: none;">
+                <div class="admin-title">👑 Admin Panel</div>
+                <div class="admin-buttons">
+                    <button class="admin-button" onclick="showAddTaskModal()">+ Add Task</button>
+                    <button class="admin-button" onclick="showUserStats()">👥 Users</button>
+                    <button class="admin-button" onclick="showWithdrawRequests()">💳 Withdrawals</button>
+                    <button class="admin-button" onclick="showSettings()">⚙️ Settings</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="#" class="nav-item active" onclick="showTab('home')">
+                <div class="nav-icon">🏠</div>
+                <div>Home</div>
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('tasks')">
+                <div class="nav-icon">🎯</div>
+                <div>Tasks</div>
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('referral')">
+                <div class="nav-icon">👥</div>
+                <div>Referral</div>
+            </a>
+            <a href="#" class="nav-item" onclick="showTab('profile')">
+                <div class="nav-icon">👤</div>
+                <div>Profile</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">💸 Withdraw Funds</div>
+                <div class="modal-subtitle">Choose your withdrawal method</div>
+            </div>
+            
+            <div class="withdraw-methods">
+                <div class="withdraw-method" onclick="selectMethod('paypal')">
+                    <div class="method-icon">💳</div>
+                    <div class="method-info">
+                        <div class="method-name">PayPal</div>
+                        <div class="method-desc">Min: $5.00 • Fee: 2%</div>
+                    </div>
+                </div>
+                
+                <div class="withdraw-method" onclick="selectMethod('crypto')">
+                    <div class="method-icon">₿</div>
+                    <div class="method-info">
+                        <div class="method-name">Cryptocurrency</div>
+                        <div class="method-desc">Min: $10.00 • Fee: 1%</div>
+                    </div>
+                </div>
+                
+                <div class="withdraw-method" onclick="selectMethod('bank')">
+                    <div class="method-icon">🏦</div>
+                    <div class="method-info">
+                        <div class="method-name">Bank Transfer</div>
+                        <div class="method-desc">Min: $20.00 • Fee: 3%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Amount (Points)</label>
+                <input type="number" class="form-input" id="withdrawAmount" placeholder="Enter amount" min="5000" max="1000000">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" id="accountLabel">Account Details</label>
+                <input type="text" class="form-input" id="accountDetails" placeholder="Enter your account details">
+            </div>
+            
+            <div class="withdraw-info">
+                <div class="withdraw-info-item">
+                    <span>Points to withdraw:</span>
+                    <span id="withdrawPoints">0</span>
+                </div>
+                <div class="withdraw-info-item">
+                    <span>USD equivalent:</span>
+                    <span id="withdrawUsd">$0.00</span>
+                </div>
+                <div class="withdraw-info-item">
+                    <span>Processing fee:</span>
+                    <span id="withdrawFee">$0.00</span>
+                </div>
+                <div class="withdraw-info-item">
+                    <span>You will receive:</span>
+                    <span id="withdrawTotal">$0.00</span>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-button secondary" onclick="closeModal()">Cancel</button>
+                <button class="modal-button primary" onclick="processWithdraw()">Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div id="addTaskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">➕ Add New Task</div>
+                <div class="modal-subtitle">Create a new earning task</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Task Title</label>
+                <input type="text" class="form-input" id="taskTitle" placeholder="Enter task title">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Task URL</label>
+                <input type="url" class="form-input" id="taskUrl" placeholder="https://example.com">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Reward Points</label>
+                <input type="number" class="form-input" id="taskReward" placeholder="Enter reward points">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Task Description</label>
+                <input type="text" class="form-input" id="taskDescription" placeholder="Brief description">
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-button secondary" onclick="closeModal()">Cancel</button>
+                <button class="modal-button primary" onclick="addTask()">Add Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Stats Modal -->
+    <div id="userStatsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📊 User Statistics</div>
+                <div class="modal-subtitle">Platform overview</div>
+            </div>
+            
+            <div id="userStatsContent">Loading...</div>
+            
+            <div class="modal-buttons">
+                <button class="modal-button primary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Initialize Telegram Web App
+        const tg = window.Telegram.WebApp;
+        let userData = {};
+        let tasks = [];
+        let cooldowns = {};
+        let isAdmin = false;
+        let selectedWithdrawMethod = '';
+
+        // Exchange rate (points to USD)
+        const POINTS_TO_USD = 0.001; // 1000 points = $1
+
+        // Sample tasks with more details
+        const sampleTasks = [
+            { 
+                id: 1, 
+                title: "Visit Our Website", 
+                url: "https://example.com", 
+                reward: 500, 
+                description: "Browse our main website",
+                icon: "🌐",
+                active: true 
+            },
+            { 
+                id: 2, 
+                title: "Watch YouTube Video", 
+                url: "https://youtube.com/watch", 
+                reward: 750, 
+                description: "Watch and like our video",
+                icon: "📺",
+                active: true 
+            },
+            { 
+                id: 3, 
+                title: "Join Telegram Channel", 
+                url: "https://t.me/channel", 
+                reward: 1000, 
+                description: "Join our official channel",
+                icon: "💬",
+                active: true 
+            },
+            { 
+                id: 4, 
+                title: "Follow Instagram", 
+                url: "https://instagram.com/profile", 
+                reward: 600, 
+                description: "Follow our Instagram page",
+                icon: "📸",
+                active: true 
+            }
+        ];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadUserData();
+            loadTasks();
+            setupEventListeners();
+        });
+
+        function initializeApp() {
+            tg.ready();
+            tg.expand();
+            
+            // Get user data from Telegram
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                userData = tg.initDataUnsafe.user;
+                userData.referralCode = userData.id.toString();
+                
+                // Check if user is admin
+                const adminIds = [12345, 67890];
+                isAdmin = adminIds.includes(userData.id);
+                
+                if (isAdmin) {
+                    document.getElementById('adminPanel').style.display = 'block';
+                }
+            } else {
+                // For testing outside Telegram
+                userData = {
+                    id: 12345,
+                    first_name: "John",
+                    last_name: "Doe",
+                    username: "johndoe",
+                    referralCode: "12345"
+                };
+                isAdmin = true;
+                document.getElementById('adminPanel').style.display = 'block';
+            }
+            
+            // Update user info in header
+            document.getElementById('userName').textContent = userData.first_name + (userData.last_name ? ' ' + userData.last_name : '');
+            document.getElementById('userId').textContent = userData.username ? '@' + userData.username : 'ID: ' + userData.id;
+        }
+
+        function loadUserData() {
+            const storedData = localStorage.getItem(`user_${userData.id}`) || '{}';
+            const userStats = JSON.parse(storedData);
+            
+            userData.points = userStats.points || 0;
+            userData.totalReferrals = userStats.totalReferrals || 0;
+            userData.totalEarned = userStats.totalEarned || 0;
+            userData.todayEarned = userStats.todayEarned || 0;
+            userData.tasksCompleted = userStats.tasksCompleted || 0;
+            
+            updateUI();
+        }
+
+        function saveUserData() {
+            const userStats = {
+                points: userData.points,
+                totalReferrals: userData.totalReferrals,
+                totalEarned: userData.totalEarned,
+                todayEarned: userData.todayEarned,
+                tasksCompleted: userData.tasksCompleted
+            };
+            localStorage.setItem(`user_${userData.id}`, JSON.stringify(userStats));
+        }
+
+        function updateUI() {
+            document.getElementById('pointsBalance').textContent = userData.points.toLocaleString();
+            document.getElementById('balanceUsd').textContent = '≈  + (userData.points * POINTS_TO_USD).toFixed(2);
+            document.getElementById('totalReferrals').textContent = userData.totalReferrals;
+            document.getElementById('totalEarned').textContent = userData.totalEarned.toLocaleString();
+            document.getElementById('todayEarned').textContent = userData.todayEarned.toLocaleString();
+            document.getElementById('tasksCompleted').textContent = userData.tasksCompleted;
+            document.getElementById('referralCode').textContent = `https://t.me/yourbot?start=${userData.referralCode}`;
+        }
+
+        function loadTasks() {
+            tasks = sampleTasks;
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const tasksList = document.getElementById('tasksList');
+            
+            if (tasks.length === 0) {
+                tasksList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <div>No tasks available</div>
+                    </div>
+                `;
+                return;
+            }
+
+            tasksList.innerHTML = tasks.map(task => {
+                const cooldownKey = `task_${task.id}_${userData.id}`;
+                const cooldownEnd = cooldowns[cooldownKey] || 0;
+                const now = Date.now();
+                const isOnCooldown = now < cooldownEnd;
+                const cooldownRemaining = Math.max(0, Math.ceil((cooldownEnd - now) / 1000));
+
+                return `
+                    <div class="task-card">
+                        <div class="task-header">
+                            <div class="task-icon">${task.icon}</div>
+                            <div class="task-info">
+                                <div class="task-title">${task.title}</div>
+                                <div class="task-description">${task.description}</div>
+                            </div>
+                            <div class="task-reward">+${task.reward}</div>
+                        </div>
+                        <button class="task-button ${isOnCooldown ? 'cooldown' : 'active'}" 
+                                onclick="handleTask(${task.id}, '${task.url}', ${task.reward})"
+                                ${isOnCooldown ? 'disabled' : ''}>
+                            ${isOnCooldown ? '⏳ Cooldown' : '🚀 Start Task'}
+                        </button>
+                        ${isOnCooldown ? `<div class="cooldown-timer">Available in ${cooldownRemaining}s</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            updateCooldownTimers();
+        }
+
+        function handleTask(taskId, url, reward) {
+            const cooldownKey = `task_${taskId}_${userData.id}`;
+            
+            // Open the task URL
+            window.open(url, '_blank');
+            
+            // Set 60-second cooldown
+            cooldowns[cooldownKey] = Date.now() + 60000;
+            
+            // Award points after delay
+            setTimeout(() => {
+                userData.points += reward;
+                userData.totalEarned += reward;
+                userData.todayEarned += reward;
+                userData.tasksCompleted += 1;
+                
+                saveUserData();
+                updateUI();
+                showToast(`+${reward} points earned!`, 'success');
+                
+                // Handle referral bonus
+                const referrer = getReferrer();
+                if (referrer) {
+                    const bonus = Math.floor(reward * 0.5);
+                    showToast(`Referrer earned +${bonus} bonus!`, 'success');
+                }
+            }, 3000);
+            
+            renderTasks();
+        }
+
+        function updateCooldownTimers() {
+            setTimeout(() => {
+                const cooldownElements = document.querySelectorAll('.cooldown-timer');
+                let hasActiveCooldowns = false;
+                
+                cooldownElements.forEach(element => {
+                    const taskCard = element.closest('.task-card');
+                    const button = taskCard.querySelector('.task-button');
+                    const taskId = button.getAttribute('onclick').match(/handleTask\((\d+)/)[1];
+                    const cooldownKey = `task_${taskId}_${userData.id}`;
+                    const cooldownEnd = cooldowns[cooldownKey] || 0;
+                    const now = Date.now();
+                    const cooldownRemaining = Math.max(0, Math.ceil((cooldownEnd - now) / 1000));
+                    
+                    if (cooldownRemaining > 0) {
+                        element.textContent = `Available in ${cooldownRemaining}s`;
+                        hasActiveCooldowns = true;
+                    } else {
+                        button.disabled = false;
+                        button.textContent = '🚀 Start Task';
+                        button.className = 'task-button active';
+                        element.style.display = 'none';
+                    }
+                });
+                
+                if (hasActiveCooldowns) {
+                    updateCooldownTimers();
+                }
+            }, 1000);
+        }
+
+        function getReferrer() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('ref');
+        }
+
+        function copyReferralLink() {
+            const referralLink = `https://t.me/yourbot?start=${userData.referralCode}`;
+            navigator.clipboard.writeText(referralLink).then(() => {
+                showToast('Referral link copied!', 'success');
+            }).catch(() => {
+                showToast('Failed to copy link', 'error');
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+
+        function setupEventListeners() {
+            // Handle withdrawal amount input
+            document.getElementById('withdrawAmount').addEventListener('input', function() {
+                updateWithdrawInfo();
+            });
+
+            // Handle Telegram Web App events
+            tg.onEvent('mainButtonClicked', () => {
+                // Handle main button click
+            });
+
+            tg.onEvent('backButtonClicked', () => {
+                closeModal();
+            });
+        }
+
+        // Withdrawal functions
+        function showWithdrawModal() {
+            if (userData.points < 5000) {
+                showToast('Minimum withdrawal is 5000 points', 'error');
+                return;
+            }
+            document.getElementById('withdrawModal').style.display = 'flex';
+            tg.BackButton.show();
+        }
+
+        function selectMethod(method) {
+            selectedWithdrawMethod = method;
+            
+            // Remove previous selection
+            document.querySelectorAll('.withdraw-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selection to clicked method
+            event.target.closest('.withdraw-method').classList.add('selected');
+            
+            // Update form labels
+            const labels = {
+                'paypal': 'PayPal Email',
+                'crypto': 'Wallet Address',
+                'bank': 'Bank Account Number'
+            };
+            
+            document.getElementById('accountLabel').textContent = labels[method];
+            document.getElementById('accountDetails').placeholder = `Enter your ${labels[method].toLowerCase()}`;
+            
+            updateWithdrawInfo();
+        }
+
+        function updateWithdrawInfo() {
+            const amount = parseInt(document.getElementById('withdrawAmount').value) || 0;
+            const usdAmount = amount * POINTS_TO_USD;
+            
+            let feePercentage = 0;
+            switch(selectedWithdrawMethod) {
+                case 'paypal': feePercentage = 0.02; break;
+                case 'crypto': feePercentage = 0.01; break;
+                case 'bank': feePercentage = 0.03; break;
+            }
+            
+            const fee = usdAmount * feePercentage;
+            const total = usdAmount - fee;
+            
+            document.getElementById('withdrawPoints').textContent = amount.toLocaleString();
+            document.getElementById('withdrawUsd').textContent = ' + usdAmount.toFixed(2);
+            document.getElementById('withdrawFee').textContent = ' + fee.toFixed(2);
+            document.getElementById('withdrawTotal').textContent = ' + total.toFixed(2);
+        }
+
+        function processWithdraw() {
+            const amount = parseInt(document.getElementById('withdrawAmount').value);
+            const accountDetails = document.getElementById('accountDetails').value;
+            
+            if (!amount || amount < 5000) {
+                showToast('Minimum withdrawal is 5000 points', 'error');
+                return;
+            }
+            
+            if (amount > userData.points) {
+                showToast('Insufficient balance', 'error');
+                return;
+            }
+            
+            if (!selectedWithdrawMethod) {
+                showToast('Please select a withdrawal method', 'error');
+                return;
+            }
+            
+            if (!accountDetails) {
+                showToast('Please enter your account details', 'error');
+                return;
+            }
+            
+            // Process withdrawal
+            userData.points -= amount;
+            saveUserData();
+            updateUI();
+            
+            // In real app, this would send to backend
+            console.log('Withdrawal request:', {
+                userId: userData.id,
+                amount: amount,
+                method: selectedWithdrawMethod,
+                accountDetails: accountDetails
+            });
+            
+            showToast('Withdrawal request submitted!', 'success');
+            closeModal();
+        }
+
+        function showHistory() {
+            showToast('History feature coming soon!', 'success');
+        }
+
+        // Navigation functions
+        function showTab(tabName) {
+            // Remove active from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active to clicked nav item
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Handle tab switching logic here
+            showToast(`${tabName} tab selected`, 'success');
+        }
+
+        function loadAllTasks() {
+            showToast('Loading all tasks...', 'success');
+        }
+
+        // Admin functions
+        function showAddTaskModal() {
+            document.getElementById('addTaskModal').style.display = 'flex';
+            tg.BackButton.show();
+        }
+
+        function addTask() {
+            const title = document.getElementById('taskTitle').value;
+            const url = document.getElementById('taskUrl').value;
+            const reward = parseInt(document.getElementById('taskReward').value);
+            const description = document.getElementById('taskDescription').value;
+            
+            if (!title || !url || !reward || !description) {
+                showToast('Please fill all fields', 'error');
+                return;
+            }
+            
+            const newTask = {
+                id: Date.now(),
+                title: title,
+                url: url,
+                reward: reward,
+                description: description,
+                icon: '⭐',
+                active: true
+            };
+            
+            tasks.push(newTask);
+            renderTasks();
+            closeModal();
+            showToast('Task added successfully!', 'success');
+        }
+
+        function showUserStats() {
+            document.getElementById('userStatsModal').style.display = 'flex';
+            document.getElementById('userStatsContent').innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.floor(Math.random() * 1000) + 100}</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.floor(Math.random() * 500) + 50}</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.floor(Math.random() * 100000) + 10000}</div>
+                        <div class="stat-label">Points Awarded</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.floor(Math.random() * 5000) + 500}</div>
+                        <div class="stat-label">Tasks Completed</div>
+                    </div>
+                </div>
+            `;
+            tg.BackButton.show();
+        }
+
+        function showWithdrawRequests() {
+            showToast('Withdrawal requests panel coming soon!', 'success');
+        }
+
+        function showSettings() {
+            showToast('Settings panel coming soon!', 'success');
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+            tg.BackButton.hide();
+            
+            // Reset withdrawal form
+            selectedWithdrawMethod = '';
+            document.querySelectorAll('.withdraw-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Clear all form inputs
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.value = '';
+            });
+        }
+
+        // Handle referral system
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralCode = urlParams.get('start');
+            
+            if (referralCode && referralCode !== userData.referralCode) {
+                showToast('Welcome! You joined via referral!', 'success');
+            }
+        });
+    </script>
+</body>
+</html>
