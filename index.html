@@ -2,18 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta 
+    name="viewport" 
+    content="width=device-width, initial-scale=1.0"
+  >
   <title>Earn by Viewing Ads</title>
+
+  <!-- Google Font: Poppins -->
+  <link 
+    rel="preconnect" 
+    href="https://fonts.googleapis.com"
+  >
+  <link 
+    rel="preconnect" 
+    href="https://fonts.gstatic.com" 
+    crossorigin
+  >
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" 
+    rel="stylesheet"
+  >
+
+  <!-- Main Stylesheet -->
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body data-theme="light">
   <header class="app-header">
     <div class="user-info">
-      <img id="user-avatar" class="avatar" src="https://via.placeholder.com/40" alt="Avatar">
-      <span id="user-name">User</span>
+      <img
+        id="user-avatar"
+        class="avatar"
+        src="https://via.placeholder.com/40"
+        alt="User Avatar"
+      >
+      <span id="user-name">Loading…</span>
     </div>
-    <button id="theme-toggle" aria-label="Toggle theme">🌙</button>
+    <button 
+      id="theme-toggle" 
+      aria-label="Toggle theme"
+    >🌙</button>
   </header>
 
   <main>
@@ -24,7 +54,11 @@
           <div class="skeleton-text"></div>
         </div>
       </div>
-      <button id="claim-btn" class="main-button" disabled>Claim 10 Coins</button>
+      <button 
+        id="claim-btn" 
+        class="main-button" 
+        disabled
+      >Claim 10 Coins</button>
     </section>
 
     <section id="history" class="tab-content">
@@ -40,11 +74,21 @@
   </main>
 
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-target="home">Home</button>
-    <button class="nav-btn" data-target="history">History</button>
-    <button class="nav-btn" data-target="profile">Profile</button>
+    <button 
+      class="nav-btn active" 
+      data-target="home"
+    >Home</button>
+    <button 
+      class="nav-btn" 
+      data-target="history"
+    >History</button>
+    <button 
+      class="nav-btn" 
+      data-target="profile"
+    >Profile</button>
   </nav>
 
   <script src="app.js"></script>
 </body>
 </html>
+```
